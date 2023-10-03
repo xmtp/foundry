@@ -24,7 +24,7 @@ RUN go version
 
 ## Go Ethereum
 WORKDIR /go-ethereum
-ARG ETH_VERSION=1.12.2
+ARG ETH_VERSION=1.13.2
 ADD https://github.com/ethereum/go-ethereum/archive/refs/tags/v${ETH_VERSION}.tar.gz /go-ethereum/go-ethereum-${ETH_VERSION}.tar.gz
 RUN echo 'SHA256 of this go-ethereum package...'
 RUN cat /go-ethereum/go-ethereum-${ETH_VERSION}.tar.gz | sha256sum 
@@ -101,7 +101,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
 RUN mkdir -p /usr/local/nvm
 ENV NVM_DIR=/usr/local/nvm
 
-ENV NODE_VERSION=v18.17.1
+ENV NODE_VERSION=v18.18.0
 
 ADD https://raw.githubusercontent.com/creationix/nvm/master/install.sh /usr/local/etc/nvm/install.sh
 RUN bash /usr/local/etc/nvm/install.sh && \
@@ -145,7 +145,7 @@ COPY --chown=xmtp:xmtp --from=foundry-builder /home/xmtp/.cargo /home/xmtp/.carg
 COPY --from=go-builder /usr/local/go /usr/local/go
 
 ## GO Ethereum Binaries
-ARG ETH_VERSION=1.12.2
+ARG ETH_VERSION=1.13.2
 COPY --from=go-builder /go-ethereum/go-ethereum-${ETH_VERSION}/build/bin /usr/local/bin
 
 # Foundry
