@@ -20,7 +20,7 @@ To use this development container in Visual Studio Code, specify the `Dockerfile
 
 Everything needed to develop smart contracts with Ethereum and [Foundry](https://github.com/foundry-rs/foundry)
 
-GO: 1.21.1
+GO: 1.21.3
 ETH: 1.13.2
 SOLC: 0.8.21
 
@@ -52,11 +52,18 @@ SOLC: 0.8.21
 FROM ghcr.io/xmtp/foundry:latest
 
 ENV PATH=${PATH}:~/.cargo/bin
-RUN ~xmtp/.cargo/bin/forge build --sizes
-
-CMD ~xmtp/.cargo/bin/forge test -vvv
+RUN forge build --sizes
+RUN forge test -vvv
 ```
 
 ### Architecture
 * linux/amd64
 * linux/arm64
+
+### Help
+
+```shell
+$ forge --help
+$ anvil --help
+$ cast --help
+```
