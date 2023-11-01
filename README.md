@@ -1,4 +1,4 @@
-# Foundry Development Container for Docker and VS Code
+# XMTP Foundry Development Container for Docker and VS Code
 
 ![Foundry](foundry.png)
 
