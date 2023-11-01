@@ -1,3 +1,10 @@
+1.0.4 (2023-11-01)
+
+* bug fix - dockerfile
+* go ethereum 1.13.4
+* solc 0.8.22
+* node 20.9.0
+
 1.0.3 (2023-11-01)
 
 * go ethereum 1.13.4
