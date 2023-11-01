@@ -145,7 +145,7 @@ COPY --chown=xmtp:xmtp --from=foundry-builder /home/xmtp/.cargo /home/xmtp/.carg
 COPY --from=go-builder /usr/local/go /usr/local/go
 
 ## GO Ethereum Binaries
-ARG ETH_VERSION=1.13.2
+ARG ETH_VERSION=1.13.4
 COPY --from=go-builder /go-ethereum/go-ethereum-${ETH_VERSION}/build/bin /usr/local/bin
 
 # Foundry
