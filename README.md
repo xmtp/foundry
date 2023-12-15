@@ -30,6 +30,13 @@ SOLC: 0.8.23
 
 [Releases](https://github.com/xmtp/foundry/pkgs/container/foundry)
 
+Deployments are available for all supported platforms.
+
+### Platform Support
+
+* linux/amd64
+* linux/arm64
+
 ### Building
 
 * requires:
@@ -40,8 +47,6 @@ SOLC: 0.8.23
 
 
 ## arm64
-
-  It's possible to use this container on Apple Silicon but an image is not provided in the ghcr registry at this time.
 
   To build locally, run:
   ` $ sh build.sh `
@@ -57,10 +62,6 @@ ENV PATH=${PATH}:~/.cargo/bin
 RUN forge build --sizes
 RUN forge test -vvv
 ```
-
-### Architecture
-* linux/amd64
-* linux/arm64
 
 ### Help
 
