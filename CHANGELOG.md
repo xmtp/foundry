@@ -1,3 +1,8 @@
+1.0.6 (2023-01-08)
+
+* go 1.21.5
+* go-ethereum 1.13.8
+
 1.0.5.1 (2023-12-15)
 
 * testing with arm64 build
