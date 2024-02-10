@@ -38,6 +38,7 @@ FROM debian:stable-slim as foundry-builder
 # DOCKER_BUILDKIT=1 docker build . -t ...
 ARG TARGETARCH
 ARG MAXIMUM_THREADS=2
+ARG CARGO_INCREMENTAL=0
 
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt update && \
@@ -54,7 +55,6 @@ RUN useradd --create-home -s /bin/bash xmtp
 RUN usermod -a -G sudo xmtp
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-
 WORKDIR /rustup
 ## Rust
 ADD https://sh.rustup.rs /rustup/rustup.sh
@@ -69,24 +69,23 @@ WORKDIR /build
 
 # latest https://github.com/foundry-rs/foundry
 ENV PATH=$PATH:~xmtp/.cargo/bin
-RUN git clone https://github.com/foundry-rs/foundry
 
 WORKDIR /build/foundry
-RUN git pull && LATEST_TAG=$(git describe --tags --abbrev=0) || LATEST_TAG=master && \
-    echo "building tag ${LATEST_TAG}" && \
-    git -c advice.detachedHead=false checkout ${LATEST_TAG} && \
-    . $HOME/.cargo/env && \
+ENV CARGO_INCREMENTAL=${CARGO_INCREMENTAL:-1}
+ENV FOUNDRY_ROOT=/usr/local/foundry
+ENV FOUNDRY_BIN=${FOUNDRY_ROOT}/bin
+RUN . $HOME/.cargo/env && \
     THREAD_NUMBER=$(cat /proc/cpuinfo | grep -c ^processor) && \
     MAX_THREADS=$(( THREAD_NUMBER > ${MAXIMUM_THREADS} ?  ${MAXIMUM_THREADS} : THREAD_NUMBER )) && \
     echo "building with ${MAX_THREADS} threads" && \
-    cargo build --jobs ${MAX_THREADS} --release && \
-    objdump -j .comment -s target/release/forge && \
-    strip target/release/forge && \
-    strip target/release/cast && \
-    strip target/release/anvil && \
-    strip target/release/chisel
-
-RUN git rev-parse HEAD > /build/foundry_commit_sha256
+    cargo install --git https://github.com/foundry-rs/foundry --tag nightly \
+    --jobs ${MAX_THREADS} --root ${FOUNDRY_ROOT} --profile local \
+    --locked forge cast chisel anvil && \
+    objdump -j .comment -s ${FOUNDRY_BIN}/forge && \
+    strip ${FOUNDRY_BIN}forge && \
+    strip ${FOUNDRY_BIN}/cast && \
+    strip ${FOUNDRY_BIN}/anvil && \
+    strip ${FOUNDRY_BIN}/chisel
 
 FROM debian:stable-slim as node18-slim
 
@@ -148,12 +147,11 @@ COPY --from=go-builder /usr/local/go /usr/local/go
 ARG ETH_VERSION=1.13.12
 COPY --from=go-builder /go-ethereum/go-ethereum-${ETH_VERSION}/build/bin /usr/local/bin
 
+ENV FOUNDRY_ROOT=/usr/local/foundry
 # Foundry
-COPY --from=foundry-builder /build/foundry_commit_sha256 /usr/local/etc/foundry_commit_sha256
-COPY --from=foundry-builder /build/foundry/target/release/forge /usr/local/bin/forge
-COPY --from=foundry-builder /build/foundry/target/release/cast /usr/local/bin/cast
-COPY --from=foundry-builder /build/foundry/target/release/anvil /usr/local/bin/anvil
-COPY --from=foundry-builder /build/foundry/target/release/chisel /usr/local/bin/chisel
+COPY --from=foundry-builder ${FOUNDRY_ROOT} ${FOUNDRY_ROOT}
+
+ENV PATH=${FOUNDRY_ROOT}/bin:${PATH}
 
 LABEL org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.name="foundry" \
