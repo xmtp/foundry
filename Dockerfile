@@ -58,34 +58,22 @@ RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 WORKDIR /rustup
 ## Rust
 ADD https://sh.rustup.rs /rustup/rustup.sh
-RUN chmod 755 /rustup/rustup.sh
+RUN chmod 555 /rustup/rustup.sh
+
+## FoundryUp
+ADD https://foundry.paradigm.xyz /rustup/foundryup.sh
+RUN chmod 555 /rustup/foundryup.sh
 
 ENV USER=xmtp
 USER xmtp
 RUN /rustup/rustup.sh -y --default-toolchain stable --profile minimal
 
-## Foundry
-WORKDIR /build
-
 # latest https://github.com/foundry-rs/foundry
 ENV PATH=$PATH:~xmtp/.cargo/bin
 
+## Foundry
 WORKDIR /build/foundry
-ENV CARGO_INCREMENTAL=${CARGO_INCREMENTAL:-1}
-ENV FOUNDRY_ROOT=/usr/local/foundry
-ENV FOUNDRY_BIN=${FOUNDRY_ROOT}/bin
-RUN . $HOME/.cargo/env && \
-    THREAD_NUMBER=$(cat /proc/cpuinfo | grep -c ^processor) && \
-    MAX_THREADS=$(( THREAD_NUMBER > ${MAXIMUM_THREADS} ?  ${MAXIMUM_THREADS} : THREAD_NUMBER )) && \
-    echo "building with ${MAX_THREADS} threads" && \
-    cargo install --git https://github.com/foundry-rs/foundry --tag nightly \
-    --jobs ${MAX_THREADS} --root ${FOUNDRY_ROOT} --profile local \
-    --locked forge cast chisel anvil && \
-    objdump -j .comment -s ${FOUNDRY_BIN}/forge && \
-    strip ${FOUNDRY_BIN}forge && \
-    strip ${FOUNDRY_BIN}/cast && \
-    strip ${FOUNDRY_BIN}/anvil && \
-    strip ${FOUNDRY_BIN}/chisel
+RUN /rustup/foundryup.sh
 
 FROM debian:stable-slim as node18-slim
 
@@ -147,11 +135,18 @@ COPY --from=go-builder /usr/local/go /usr/local/go
 ARG ETH_VERSION=1.13.12
 COPY --from=go-builder /go-ethereum/go-ethereum-${ETH_VERSION}/build/bin /usr/local/bin
 
-ENV FOUNDRY_ROOT=/usr/local/foundry
-# Foundry
-COPY --from=foundry-builder ${FOUNDRY_ROOT} ${FOUNDRY_ROOT}
+# Foundry Up
+ENV USER=xmtp
+USER xmtp
+ENV FOUNDRY_INSTALL_DIR=/home/${USER}/.foundry
+COPY --from=foundry-builder ${FOUNDRY_INSTALL_DIR} ${FOUNDRY_INSTALL_DIR}
+ENV PATH=$PATH:${FOUNDRY_INSTALL_DIR}/bin
+RUN foundryup
 
-ENV PATH=${FOUNDRY_ROOT}/bin:${PATH}
+RUN strip ${FOUNDRY_INSTALL_DIR}/bin/forge
+RUN strip ${FOUNDRY_INSTALL_DIR}/bin/cast
+RUN strip ${FOUNDRY_INSTALL_DIR}/bin/anvil
+RUN strip ${FOUNDRY_INSTALL_DIR}/bin/chisel
 
 LABEL org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.name="foundry" \
