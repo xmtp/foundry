@@ -1,6 +1,11 @@
-# XMTP Foundry Development Container for Docker and VS Code
+![Status](https://img.shields.io/badge/Deprecated-brown)
 
-![Foundry](foundry.png)
+> [!CAUTION]
+> This repository is no longer maintained.
+
+The documentation below is provided for historical reference only.
+
+# XMTP Foundry Development Container for Docker and VS Code
 
 This development container for Visual Studio Code is a pre-configured and isolated environment that allows you to develop, build, and test your software projects using consistent tools and settings.   This development container can be used in Docker to create a standardized and reproducible environment for your development workflow. This is useful when working on projects that require specific versions of programming languages, libraries, tools, and other dependencies. By using this development container, you can ensure that all members of your development team work with the same development environment, reducing issues related to differences in configurations and dependencies.
 
